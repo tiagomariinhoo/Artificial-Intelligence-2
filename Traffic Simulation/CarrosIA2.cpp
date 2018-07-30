@@ -47,6 +47,7 @@ struct Sinal{
 	int temp;
 };
 
+vector < vector< pair< ii , int > >  > congestionamento;
 vector<string> vec;
 vector<Car> carro;
 vector<Sinal> sinal(30);
@@ -199,8 +200,12 @@ ii nextPosSinal(int x, int y){
 	} else if(x == 18 and y == 12){
 		aux = {{x-1, y}, {x,y+1}};
 	}
+	int atual = rand()%2;
 
-	return aux[rand()%2];
+	// cout << "atual : " << atual << endl;
+	// cout << aux[0].F << " - " << aux[0].S << endl;
+	// cout << aux[1].F << " - " << aux[1].S << endl;
+	return aux[atual];
 }
 ii verNext(int x, int y){
 	if(vec[x][y] == '>') return {x, y+1};
@@ -276,6 +281,111 @@ bool have(int x, int y){
 		return false;
 }
 
+bool isSinal(int x, int y){
+	if(x == 0 and y == 6){
+		return true;
+	} else if(x == 0 and y == 12){
+		return true;
+	} else if(x == 6 and y == 0){
+		return true;
+	} else if(x == 6 and y == 6){
+		return true;
+	} else if(x == 6 and y == 12){
+		return true;
+	} else if(x == 6 and y == 18){
+		return true;
+	} else if(x == 12 and y == 0){
+		return true;
+	} else if(x == 12 and y == 6){
+		return true;
+	} else if(x == 12 and y == 12){
+		return true;
+	} else if(x == 12 and y == 18){
+		return true;
+	} else if(x == 18 and y == 6){
+		return true;
+	} else if(x == 18 and y == 12){
+		return true;
+	}
+	return false;
+}
+
+int valueCong(int x, int y, char atual){
+		if(!have(x, y)) return 0;
+	int aa = 0, bb = 0;
+	if(atual == '^'){
+		while(have(x - aa, y)) aa++;
+	} else if(atual == '>'){
+		while(have(x, y + aa)) aa++;
+	} else if(atual == '<'){
+		while(have(x, y - aa)) aa++;
+	} else {
+		while(have(x + aa, y)) aa++;
+	}
+	return aa;
+}
+
+void congestionamentoCount(){
+	//VertHori = false, vertical aberto, = true, horizontal aberto
+	vector< pair< ii , int > > congAtual;
+		for(int i=0;i<19;i++){
+			for(int j=0;j<19;j++){
+				int conta = -1;
+				if(i == 0 and j== 6){
+					if(!VertHori) conta = valueCong(i, j+1, '>');
+				} else if(i == 0 and  j== 12){
+					if(!VertHori) conta = valueCong(i, j+1, '>');
+				} else if(i == 6 and  j== 0){
+					if(VertHori) conta = valueCong(i-1, j, '^');
+				} else if(i == 6 and  j== 6){
+					if(VertHori) conta = valueCong(i-1, j, '^');
+					else conta = valueCong(i, j-1, '<');
+				} else if(i == 6 and  j== 12){
+					if(VertHori) conta = valueCong(i+1, j, 'v');
+					else conta = valueCong(i, j-1, '<');					
+				} else if(i == 6 and  j== 18){
+					if(VertHori) conta = valueCong(i+1, j, 'v');
+					else conta = valueCong(i, j-1, '<');
+				} else if(i == 12 and j == 0){
+					if(VertHori) conta = valueCong(i-1, j, '^');
+					else conta = valueCong(i, j+1, '>');
+				} else if(i == 12 and j == 6){
+					if(VertHori) conta = valueCong(i-1, j, '^');
+					else conta = valueCong(i, j+1, '>');
+				} else if(i == 12 and j == 12){
+					if(VertHori) conta = valueCong(i+1, j, 'v');
+					else conta = valueCong(i, j+1, '>');
+				} else if(i == 12 and j == 18){
+					if(VertHori) conta = valueCong(i+1, j, 'v');
+				} else if(i == 18 and j == 6){
+					if(VertHori) conta = valueCong(i-1, j, '^');
+					else conta = valueCong(i, j-1, '<');
+				} else if(i == 18 and j == 12){
+					if(!VertHori) conta = valueCong(i, j-1, '<');
+				} 
+
+				if(conta != -1){
+					congAtual.pb({{i, j}, conta});
+				}
+			}
+		}
+
+		congestionamento.pb(congAtual);
+}
+
+void checkCongestionamento(){
+	congestionamentoCount();
+	if(sz(congestionamento[sz(congestionamento)-1]) != 0){
+		cout << " ---- " << endl;
+		cout << "Sinal - Quantidade de Carros" << endl;
+		for(int i=0;i<sz(congestionamento[sz(congestionamento)- 1]);i++){
+			cout << congestionamento[sz(congestionamento) - 1][i].F.F
+			<< " - " << congestionamento[sz(congestionamento) - 1][i].F.S << " : "
+			<<  congestionamento[sz(congestionamento) - 1][i].S << endl;
+		}
+	}
+}
+
 int main(){	
 	ios_base::sync_with_stdio(false);
 	cin.tie(NULL);
@@ -295,6 +405,8 @@ int main(){
 		cout << "Tempo : " << tempo << endl;
 		cout << "HaveCar : " << haveCar << endl;
 		cout << "Sinal : " << (VertHori == false ? "Vertical" : "Horizontal") << endl;
+
+		checkCongestionamento();
 
 		for(int i=0;i<19;i++){
 			for(int j=0;j<19;j++){
